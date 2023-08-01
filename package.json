@@ -1,0 +1,35 @@
+{
+  "name": "redcharts",
+  "version": "1.0.0",
+  "description": "redshoes chart library",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev:fast": "node build/dev.js",
+    "dev": "npx -y concurrently -n dev,server \"npm run dev:fast\" \"npx -y http-server -c-1 -s -o test\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuxingjie/redcharts.git"
+  },
+  "keywords": [
+    "charts",
+    "pivot-charts"
+  ],
+  "author": "DJTony, DJShank",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wuxingjie/redcharts/issues"
+  },
+  "homepage": "https://github.com/wuxingjie/redcharts",
+  "dependencies": {
+    "d3": "7.4.0"
+  },
+  "devDependencies": {
+    "@types/d3": "7.4.0",
+    "esbuild": "0.18.17",
+    "typescript": "^5.1.6"
+  }
+
+}
