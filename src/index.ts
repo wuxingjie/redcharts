@@ -1,9 +1,11 @@
+import {chainable} from './utils/functional';
+export * from './utils/functional';
+export * from './utils/Iterators';
+
 export default function hello(msg: string) {
-    console.log('hello ' + msg);
+    console.log("hello " + msg)
+}
+type ChartOption = {
+
 }
 
-import * as d3 from 'd3';
-
-export { d3 };
-
-type ChartOption = {};

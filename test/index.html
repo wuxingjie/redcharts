@@ -10,6 +10,13 @@
     <div id="chart"></div>
     <script type="module">
         import hello from './redcharts.js';
+        import {chainable, map} from './redcharts.js';
+        const f = (n) => n * 2;
+        const r =
+            chainable(map(f))
+                .andThen(map(f))
+                .andThen(a => console.log(Array.from(a)))
+                ([1,2])
         hello("dj");
     </script>
 </body>
