@@ -18,5 +18,5 @@ await ctx
         port: 8098,
     })
     .then(({ port, host }) => {
-        console.log(`dev server started. http://localhost:${port}/d3test.html`);
+        console.log(`dev server started. http://localhost:${port}/index.html`);
     });

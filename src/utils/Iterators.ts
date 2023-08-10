@@ -1,53 +1,105 @@
-function map<T,R>(m: (v: T) => R): (f: Iterable<T>) => Iterable<R> {
+function map<T, R>(m: (v: T) => R): (f: Iterable<T>) => Iterable<R> {
     return (input: Iterable<T>): Iterable<R> => {
         function* gen(): Generator<R> {
-            for (const e of input){
-                yield m(e)
+            for (const e of input) {
+                yield m(e);
             }
         }
         return gen();
-    }
+    };
 }
 
-map<N>(mapper: (e: T) => N): Iterator<N> {
-
+function flatMap<T>(mapper: (e: T) => IterableIterator<T>): (f: Iterable<T>) => Iterable<T> {
+    return (input: Iterable<T>): Iterable<T> => {
+        function* gen(): Generator<T> {
+            for (const e of input) {
+                for (const eElement of mapper(e)) {
+                    yield eElement;
+                }
+            }
+        }
+        return gen();
+    };
 }
 
-flatMap(mapper: (e: T) => IterableIterator<T>): Iterator<T>{
-
+function scanLeft<T, B>(init: B, op: (b: B, e: T) => B): (f: Iterable<T>) => Iterable<B> {
+    return (input: Iterable<T>): Iterable<B> => {
+        function* gen(): Generator<B> {
+            for (const e of input) {
+                yield op(init, e);
+            }
+        }
+        return gen();
+    };
 }
 
-scanLeft<B>(init: B, op: (b: B, e: T) => B): Iterator<B> {
+function filter<T>(f: (e: T, i: number) => boolean): (f: Iterable<T>) => Iterable<T> {
+    return (input: Iterable<T>): Iterable<T> => {
+        let index = 0;
+        function* gen(): Generator<T> {
+            for (const e of input) {
+                if (f(e, index++)) {
+                    yield e;
+                }
+            }
+        }
+        return gen();
+    };
 }
 
-filter(p: (e: T) => boolean): Iterator<T>{
-
+function filterNot<T>(p: (e: T) => boolean): (f: Iterable<T>) => Iterable<T> {
+    return filter<T>((e) => !p(e));
 }
 
-filterNot(p: (e: T) => boolean): Iterator<T>{
-
+function take<T>(n: number): (f: Iterable<T>) => Iterable<T> {
+    return filter<T>((_, index) => {
+        return index < n;
+    });
 }
 
-take(n: number): Iterator<T> {
-
+function takeWhile<T>(p: (e: T) => boolean): (f: Iterable<T>) => Iterable<T> {
+    return (input: Iterable<T>): Iterable<T> => {
+        function* gen(): Generator<T> {
+            for (const e of input) {
+                if (p(e)) {
+                    return;
+                }
+                yield e;
+            }
+        }
+        return gen();
+    };
 }
 
-takeWhile(p: (e: T) => boolean): Iterator<T>{
-
+function skip<T>(n: number): (f: Iterable<T>) => Iterable<T> {
+    return filter<T>((_, index) => {
+        return index > n;
+    });
 }
 
-skip(n: number): Iterator<T>{
-
+function skipWhile<T>(p: (e: T) => boolean): (f: Iterable<T>) => Iterable<T> {
+    let status = false;
+    return filter<T>((e) => {
+        status = status || p(e);
+        return status;
+    });
 }
 
-skipWhile(n: number): Iterator<T>{
-
+function slice<T>(from: number, until: number): (f: Iterable<T>) => Iterable<T> {
+    return (input: Iterable<T>): Iterable<T> => {
+        function* gen(): Generator<T> {
+            let index = 0;
+            for (const e of input) {
+                if (index > from || index === from) {
+                    yield e;
+                } else if (index === until) {
+                    return;
+                }
+                index++;
+            }
+        }
+        return gen();
+    };
 }
 
-slice(from: number, until: number): Iterator<T> {
-
-}
-
-export {
-    map
-}
+export { map, flatMap, skip, skipWhile, takeWhile, take, slice, filter, filterNot, scanLeft };
