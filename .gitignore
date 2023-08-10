@@ -131,3 +131,5 @@ dist
 
 # ide
 .idea
+redcharts.js
+redcharts.js.map

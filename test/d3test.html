@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <title>d3-test</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" type="text/css" href="./styles.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.js"></script>
 </head>
 <body>
-<script type="text/javascript">
-    var liner = d3.scaleLinear(["red", "blue"])
-    var res = liner(0.5)
-    console.log(res)
+<svg width="500" height="500"/>
+<script  type="module">
+    import {d3} from './redcharts.js';
+
+    const lines = d3.line()
+        .curve(d3.curveBumpX);
+    console.log(lines([[1, 3], [2, 7], [3, 2], [5, 2]]))
 
 </script>
 
