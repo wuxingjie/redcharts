@@ -15,7 +15,7 @@ import {
     toArray,
     zip,
     zipWithIndex,
-} from './Iterators';
+} from './iterators';
 
 class Stream<T> implements Iterable<T> {
     constructor(private it: Iterable<T>) {}

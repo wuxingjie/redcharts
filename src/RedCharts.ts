@@ -1,8 +1,3 @@
+class RedChart {}
 
-class RedChart {
-    constructor() {
-
-    }
-}
-
-export default RedChart
+export default RedChart;

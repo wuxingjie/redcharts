@@ -17,6 +17,6 @@ await ctx
         servedir: '../test',
         port: 8098,
     })
-    .then(({ port, host }) => {
+    .then(({ port }) => {
         console.log(`dev server started. http://localhost:${port}/index.html`);
     });
