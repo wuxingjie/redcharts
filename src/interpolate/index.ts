@@ -1,8 +1,6 @@
-import { chainable, identity } from '../utils/functional';
-import { Iterator } from '../utils/Iterator';
-import { filterNotNull, generate, map, takeWhile, toArray, zip } from '../utils/Iterators';
+import { constFunc } from '../utils/functional';
 import { Stream } from '../utils/stream';
-import { isNotNull } from '../utils/types';
+import { isNotNull, isNull, isNumeric } from '../utils/types';
 
 function number(a: number, b: number): (t: number) => number {
     return (t: number) => {
@@ -18,38 +16,30 @@ function numberRound(a: number, b: number): (t: number) => number {
 }
 
 const numRegExp1 = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
-const numRegExp2 = new RegExp(numRegExp1.source);
+const numRegExpSplit = /([-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?)/g;
 function string(a: string, b: string): (t: number) => string {
-    return (t: number) => {
-        numRegExp1.lastIndex = numRegExp2.lastIndex = 0;
-        const aNumbers = Stream.generate(() => numRegExp1.exec(a))
-            .takeWhile(isNotNull)
-            .filterNotNull()
-            .map((r) => Number(r[0]))
-            .toArray();
-        const bNumbers = Stream.generate(() => numRegExp1.exec(b))
-            .takeWhile(isNotNull)
-            .filterNotNull()
-            .map((r) => {
-                return {
-                    numStr: r[0],
-                    num: Number(r[0]),
-                    startIndex: r.index,
-                    endIndex: r.index + r[0].length,
-                };
-            })
-            .toArray();
-        Stream.from(aNumbers)
-            .zip(bNumbers)
-            .map(([aNum, bInfo]) => {
-                number(aNum, bInfo.num);
-            });
-        const ziped = Stream.zip(aNumbers, bNumbers);
-        if (bNumbers.length > aNumbers.length) {
-            return b;
-        }
+    numRegExp1.lastIndex = numRegExpSplit.lastIndex = 0;
+    const aNumbers = Stream.generate(() => numRegExp1.exec(a))
+        .takeWhile(isNull)
+        .filterNotNull()
+        .map((r) => Number(r[0]))
+        .toArray();
 
-        return '';
+    let numIndex = 0;
+    const tokenFunctions = Stream.from(b.split(numRegExpSplit))
+        .map((r) => {
+            // number
+            if (isNumeric(r) && aNumbers[numIndex] !== undefined) {
+                const numInterp = number(aNumbers[numIndex], Number(r));
+                numIndex++;
+                return numInterp;
+            }
+            // string
+            return constFunc(r);
+        })
+        .toArray();
+    return (t: number) => {
+        return tokenFunctions.map((f) => f(t)).join('');
     };
 }
 export { number as interpolateNumber, numberRound as interpolateNumberRound, string as interpolateString };

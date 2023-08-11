@@ -1,10 +1,11 @@
 import { isNotNull } from './types';
 
-function map<T, R>(m: (v: T) => R): (f: Iterable<T>) => Iterable<R> {
+function map<T, R>(m: (v: T, index: number) => R): (f: Iterable<T>) => Iterable<R> {
     return (input: Iterable<T>): Iterable<R> => {
+        let i = 0;
         function* gen(): Generator<R> {
             for (const e of input) {
-                yield m(e);
+                yield m(e, i++);
             }
         }
         return gen();
