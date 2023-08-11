@@ -1,3 +1,5 @@
+import {isNotNull} from './types';
+
 function map<T, R>(m: (v: T) => R): (f: Iterable<T>) => Iterable<R> {
     return (input: Iterable<T>): Iterable<R> => {
         function* gen(): Generator<R> {
@@ -9,9 +11,9 @@ function map<T, R>(m: (v: T) => R): (f: Iterable<T>) => Iterable<R> {
     };
 }
 
-function flatMap<T>(mapper: (e: T) => IterableIterator<T>): (f: Iterable<T>) => Iterable<T> {
-    return (input: Iterable<T>): Iterable<T> => {
-        function* gen(): Generator<T> {
+function flatMap<T,R>(mapper: (e: T) => Iterable<R>): (f: Iterable<T>) => Iterable<R> {
+    return (input: Iterable<T>): Iterable<R> => {
+        function* gen(): Generator<R> {
             for (const e of input) {
                 for (const eElement of mapper(e)) {
                     yield eElement;
@@ -33,7 +35,7 @@ function scanLeft<T, B>(init: B, op: (b: B, e: T) => B): (f: Iterable<T>) => Ite
     };
 }
 
-function filter<T>(f: (e: T, i: number) => boolean): (f: Iterable<T>) => Iterable<T> {
+function filter<T>(f: (e: T, index: number) => boolean): (f: Iterable<T>) => Iterable<T> {
     return (input: Iterable<T>): Iterable<T> => {
         let index = 0;
         function* gen(): Generator<T> {
@@ -47,8 +49,12 @@ function filter<T>(f: (e: T, i: number) => boolean): (f: Iterable<T>) => Iterabl
     };
 }
 
-function filterNot<T>(p: (e: T) => boolean): (f: Iterable<T>) => Iterable<T> {
-    return filter<T>((e) => !p(e));
+function filterNotNull<T>(): (f: Iterable<T>) => Iterable<NonNullable<T>> {
+    return filter(isNotNull) as (f: Iterable<T>) => Iterable<NonNullable<T>>;
+}
+
+function filterNot<T>(p: (e: T, index: number) => boolean): (f: Iterable<T>) => Iterable<T> {
+    return filter<T>((e, i) => !p(e,i));
 }
 
 function take<T>(n: number): (f: Iterable<T>) => Iterable<T> {
@@ -102,4 +108,40 @@ function slice<T>(from: number, until: number): (f: Iterable<T>) => Iterable<T> 
     };
 }
 
-export { map, flatMap, skip, skipWhile, takeWhile, take, slice, filter, filterNot, scanLeft };
+function toArray<T>(): (f: Iterable<T>) => T[] {
+    return (f: Iterable<T>) => Array.from(f)
+}
+
+// -------------------------creator---------------------------
+
+function* iterate<T>(seed: T, p: () => boolean, next: (v: T) => T): Iterable<T> {
+    function* gen(): Generator<T> {
+        yield seed;
+        while (p()) {
+            yield seed = next(seed)
+        }
+    }
+    return gen();
+}
+
+function* generate<T>(supplier: () => T): Generator<T>{
+    yield supplier();
+}
+
+export {
+    map,
+    flatMap,
+    skip,
+    skipWhile,
+    takeWhile,
+    take,
+    slice,
+    filter,
+    filterNotNull,
+    filterNot,
+    scanLeft,
+    toArray,
+    // creators
+    iterate,
+    generate
+};

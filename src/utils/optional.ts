@@ -4,7 +4,7 @@ class Optional<T>{
 
     isDefined = ():boolean => !this.isEmpty()
 
-    get = (): T => null as unknown as T;
+    get = <R>(): T => null as unknown as T;
 
     getOrElse<N>(v: N | (() => N)): Optional<N> {
         return null as unknown as Optional<N>
