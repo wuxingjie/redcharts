@@ -2,31 +2,42 @@ import {
     filter,
     filterNot,
     filterNotNull,
-    flatMap, generate,
+    flatMap,
+    generate,
+    iterate,
     map,
     scanLeft,
     skip,
     skipWhile,
     slice,
     take,
-    takeWhile, toArray
-} from "./Iterators";
-import {Nullable} from './types';
+    takeWhile,
+    toArray,
+    zip,
+    zipWithIndex,
+} from './Iterators';
 
 class Stream<T> implements Iterable<T> {
-
     constructor(private it: Iterable<T>) {}
 
     static from<T>(it: Iterable<T>) {
-        return new Stream(it)
+        return new Stream(it);
     }
 
     static of<T>(...items: T[]) {
         return new Stream(items);
     }
 
-    static generate<T>(supplier: () => T): Stream<Nullable<T>> {
-        return Stream.from(generate(supplier))
+    static generate<T>(supplier: () => T): Stream<T> {
+        return Stream.from(generate(supplier));
+    }
+
+    static iterate<T>(seed: T, p: () => boolean, next: (v: T) => T): Stream<T> {
+        return Stream.from(iterate(seed, p, next));
+    }
+
+    static zip<A, B>(a: Iterable<A>, b: Iterable<B>): Stream<[A, B]> {
+        return Stream.from(zip(a, b));
     }
 
     [Symbol.iterator](): Iterator<T> {
@@ -37,7 +48,7 @@ class Stream<T> implements Iterable<T> {
 
     flatMap = <R>(m: (v: T) => Iterable<R>): Stream<R> => new Stream(flatMap(m)(this));
 
-    scanLeft = <R>(init: R, op: (b: R, e: T) => R): Stream<R> => new Stream(scanLeft(init,op)(this));
+    scanLeft = <R>(init: R, op: (b: R, e: T) => R): Stream<R> => new Stream(scanLeft(init, op)(this));
 
     filter = (f: (e: T, index: number) => boolean): Stream<T> => new Stream(filter(f)(this));
 
@@ -55,10 +66,12 @@ class Stream<T> implements Iterable<T> {
 
     slice = (from: number, until: number): Stream<T> => new Stream(slice<T>(from, until)(this));
 
-    toArray = (): T[] => toArray<T>()(this)
+    zip = <B>(that: Iterable<B>): Stream<[T, B]> => new Stream(zip(this, that));
 
+    zipWithIndex = (): Stream<[T, number]> => new Stream(zipWithIndex<T>()(this));
+
+    // -------------------------collectors-----------------------
+    toArray = (): T[] => toArray<T>()(this);
 }
 
-export {
-    Stream
-}
+export { Stream };

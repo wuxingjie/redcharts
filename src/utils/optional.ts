@@ -1,13 +1,12 @@
-class Optional<T>{
+class Optional<T> {
+    isEmpty = (): boolean => true;
 
-    isEmpty = ():boolean => true;
-
-    isDefined = ():boolean => !this.isEmpty()
+    isDefined = (): boolean => !this.isEmpty();
 
     get = <R>(): T => null as unknown as T;
 
     getOrElse<N>(v: N | (() => N)): Optional<N> {
-        return null as unknown as Optional<N>
+        return null as unknown as Optional<N>;
     }
 
     map<N>(f: (v: T) => N): Optional<N> {
@@ -23,5 +22,6 @@ class Optional<T>{
     }
 
     contains = (v: T): boolean => this.isDefined() && this.get() === v;
-
 }
+
+export { Optional };

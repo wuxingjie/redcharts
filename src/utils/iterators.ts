@@ -1,4 +1,4 @@
-import {isNotNull} from './types';
+import { isNotNull } from './types';
 
 function map<T, R>(m: (v: T) => R): (f: Iterable<T>) => Iterable<R> {
     return (input: Iterable<T>): Iterable<R> => {
@@ -11,7 +11,7 @@ function map<T, R>(m: (v: T) => R): (f: Iterable<T>) => Iterable<R> {
     };
 }
 
-function flatMap<T,R>(mapper: (e: T) => Iterable<R>): (f: Iterable<T>) => Iterable<R> {
+function flatMap<T, R>(mapper: (e: T) => Iterable<R>): (f: Iterable<T>) => Iterable<R> {
     return (input: Iterable<T>): Iterable<R> => {
         function* gen(): Generator<R> {
             for (const e of input) {
@@ -54,7 +54,7 @@ function filterNotNull<T>(): (f: Iterable<T>) => Iterable<NonNullable<T>> {
 }
 
 function filterNot<T>(p: (e: T, index: number) => boolean): (f: Iterable<T>) => Iterable<T> {
-    return filter<T>((e, i) => !p(e,i));
+    return filter<T>((e, i) => !p(e, i));
 }
 
 function take<T>(n: number): (f: Iterable<T>) => Iterable<T> {
@@ -108,23 +108,50 @@ function slice<T>(from: number, until: number): (f: Iterable<T>) => Iterable<T> 
     };
 }
 
-function toArray<T>(): (f: Iterable<T>) => T[] {
-    return (f: Iterable<T>) => Array.from(f)
-}
-
-// -------------------------creator---------------------------
-
-function* iterate<T>(seed: T, p: () => boolean, next: (v: T) => T): Iterable<T> {
-    function* gen(): Generator<T> {
-        yield seed;
-        while (p()) {
-            yield seed = next(seed)
+function zip<T, B>(curr: Iterable<T>, that: Iterable<B>): Iterable<[T, B]> {
+    function* gen(): Generator<[T, B]> {
+        const thatIt = that[Symbol.iterator];
+        for (const e of curr) {
+            const thatNext = thatIt().next();
+            if (!thatNext.done) {
+                yield [e, thatNext.value];
+            } else {
+                break;
+            }
         }
     }
     return gen();
 }
 
-function* generate<T>(supplier: () => T): Generator<T>{
+function zipWithIndex<T>(): (i: Iterable<T>) => Iterable<[T, number]> {
+    return (it: Iterable<T>): Iterable<[T, number]> => {
+        function* gen(): Generator<[T, number]> {
+            let i = 0;
+            for (const e of it) {
+                yield [e, i++];
+            }
+        }
+        return gen();
+    };
+}
+
+// -------------------------collectors-----------------------
+function toArray<T>(): (f: Iterable<T>) => T[] {
+    return (f: Iterable<T>) => Array.from(f);
+}
+
+// -------------------------creator---------------------------
+function iterate<T>(seed: T, p: () => boolean, next: (v: T) => T): Iterable<T> {
+    function* gen(): Generator<T> {
+        yield seed;
+        while (p()) {
+            yield (seed = next(seed));
+        }
+    }
+    return gen();
+}
+
+function* generate<T>(supplier: () => T): Generator<T> {
     yield supplier();
 }
 
@@ -140,8 +167,10 @@ export {
     filterNotNull,
     filterNot,
     scanLeft,
+    zip,
+    zipWithIndex,
     toArray,
     // creators
     iterate,
-    generate
+    generate,
 };
