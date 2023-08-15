@@ -9,7 +9,7 @@ class Path {
     private pathString = '';
     private start?: Point;
     private end?: Point;
-    constructor(private digits: number) {}
+    constructor(private ctx: CanvasRenderingContext2D | SVGElement) {}
 
     moveTo(x: number, y: number) {
         this.start = { x, y };
@@ -17,16 +17,16 @@ class Path {
         this.append(`M ${x},${y}`);
     }
 
+    closePath() {
+        if (isNotNull(this.start) && isNotNull(this.end)) {
+            this.end = { ...this.start };
+            this.append('Z');
+        }
+    }
+
     lineTo(x: number, y: number) {
         this.end = { x, y };
         this.append(`L${x},${y}`);
-    }
-
-    closePath() {
-        if (isNotNull(this.start) && isNotNull(this.end)) {
-            this.start = { ...this.end };
-            this.append('Z');
-        }
     }
 
     bezierCurveTo(x1: number, y1: number, x2: number, y2: number, x: number, y: number) {

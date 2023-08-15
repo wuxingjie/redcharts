@@ -1,7 +1,7 @@
-import { D3Ease } from './D3Ease';
+import { LineTsx } from './Line';
 
 function App() {
-    return <D3Ease />;
+    return <LineTsx />;
 }
 
 export default App;

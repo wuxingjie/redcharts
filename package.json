@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "pnpm --filter example run dev",
     "build": "tsc && vite build",
-    "test": "jest"
+    "test": "jest src/"
   },
   "repository": {
     "type": "git",
