@@ -1,5 +1,6 @@
 function constFunc<T>(a: T): () => T {
-    return () => a;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return (...ignore: any[]) => a;
 }
 
 function identity<T>(a: T): T {

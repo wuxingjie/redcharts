@@ -1,8 +1,6 @@
-import { chainable, identity } from '../utils/functional';
-import { Iterator } from '../utils/Iterator';
-import { filterNotNull, generate, map, takeWhile, toArray, zip } from '../utils/Iterators';
+import { constFunc } from '../utils/functional';
 import { Stream } from '../utils/stream';
-import { isNotNull } from '../utils/types';
+import { isNull, isNumeric } from '../utils/types';
 
 function number(a: number, b: number): (t: number) => number {
     return (t: number) => {
@@ -17,39 +15,71 @@ function numberRound(a: number, b: number): (t: number) => number {
     };
 }
 
-const numRegExp1 = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
-const numRegExp2 = new RegExp(numRegExp1.source);
+const numRegExp = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
+const numRegExpSplit = /([-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?)/g;
 function string(a: string, b: string): (t: number) => string {
-    return (t: number) => {
-        numRegExp1.lastIndex = numRegExp2.lastIndex = 0;
-        const aNumbers = Stream.generate(() => numRegExp1.exec(a))
-            .takeWhile(isNotNull)
-            .filterNotNull()
-            .map((r) => Number(r[0]))
-            .toArray();
-        const bNumbers = Stream.generate(() => numRegExp1.exec(b))
-            .takeWhile(isNotNull)
-            .filterNotNull()
-            .map((r) => {
-                return {
-                    numStr: r[0],
-                    num: Number(r[0]),
-                    startIndex: r.index,
-                    endIndex: r.index + r[0].length,
-                };
-            })
-            .toArray();
-        Stream.from(aNumbers)
-            .zip(bNumbers)
-            .map(([aNum, bInfo]) => {
-                number(aNum, bInfo.num);
-            });
-        const ziped = Stream.zip(aNumbers, bNumbers);
-        if (bNumbers.length > aNumbers.length) {
-            return b;
-        }
+    numRegExp.lastIndex = numRegExpSplit.lastIndex = 0;
+    const aNumbers = Stream.generate(() => numRegExp.exec(a))
+        .takeWhile(isNull)
+        .filterNotNull()
+        .map((r) => Number(r[0]))
+        .toArray();
 
-        return '';
+    let numIndex = 0;
+    const tokenFunctions = Stream.from(b.split(numRegExpSplit))
+        .map((r) => {
+            // number
+            if (isNumeric(r) && aNumbers[numIndex] !== undefined) {
+                const numInterp = number(aNumbers[numIndex], Number(r));
+                numIndex++;
+                return numInterp;
+            }
+            // string
+            return constFunc(r);
+        })
+        .toArray();
+    return (t: number) => {
+        return tokenFunctions.map((f) => f(t)).join('');
     };
 }
-export { number as interpolateNumber, numberRound as interpolateNumberRound, string as interpolateString };
+
+/**
+ * 注意每次返回的Date为同一对象
+ * @param a
+ * @param b
+ */
+function date(a: Date, b: Date): (t: number) => Date {
+    const interp = number(+a, +b);
+    const d = new Date();
+    return (t: number): Date => {
+        d.setTime(interp(t));
+        return d;
+    };
+}
+
+/**
+ * 注意每次调用返回的是同一数组对象
+ * @param a
+ * @param b
+ */
+function numberArray(a: number[], b: number[]): (t: number) => number[] {
+    let i = 0;
+    //  每个元素的插值器函数
+    const funcs = Stream.from(b)
+        .takeWhile(() => a[i++] === undefined)
+        .map((e, i) => number(a[i], e))
+        .toArray();
+    const res = b.slice();
+    return (t: number): number[] => {
+        funcs.forEach((f, i) => (res[i] = f(t)));
+        return res;
+    };
+}
+
+export {
+    number as interpolateNumber,
+    numberRound as interpolateNumberRound,
+    string as interpolateString,
+    date as interpolateDate,
+    numberArray as interpolateNumberArray,
+};

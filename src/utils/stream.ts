@@ -44,7 +44,7 @@ class Stream<T> implements Iterable<T> {
         return this.it[Symbol.iterator]();
     }
 
-    map = <R>(m: (v: T) => R): Stream<R> => new Stream(map(m)(this));
+    map = <R>(m: (v: T, index: number) => R): Stream<R> => new Stream(map(m)(this));
 
     flatMap = <R>(m: (v: T) => Iterable<R>): Stream<R> => new Stream(flatMap(m)(this));
 

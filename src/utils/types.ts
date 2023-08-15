@@ -8,5 +8,9 @@ function isNull(v: any): v is null {
     return v == null;
 }
 
-export { isNotNull, isNull };
+function isNumeric(v: any): v is number {
+    return !isNaN(v) && !isNaN(parseFloat(v));
+}
+
 export type { Nullable };
+export { isNotNull, isNull, isNumeric };
